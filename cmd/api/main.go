@@ -20,10 +20,6 @@ type application struct {
 	logger *log.Logger
 }
 
-func (a application) routes() http.Handler {
-
-}
-
 func main() {
 	var cfg config
 	cfg.env = "dev"
