@@ -25,7 +25,7 @@ func (app *application) showCandleHandler(w http.ResponseWriter, r *http.Request
 		Description: "Candle with roses",
 		Price:       4000.0,
 	}
-	err = app.writeJSON(w, http.StatusOK, candle, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"candle": candle}, nil)
 	if err != nil {
 		app.logger.Println(err)
 		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
