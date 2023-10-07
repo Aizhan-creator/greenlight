@@ -2,23 +2,32 @@ package main
 
 import (
 	"fmt"
+	"greenlight/internal/data"
 	"net/http"
+	"time" // New import
 )
 
-// Add a createMovieHandler for the "POST /v1/movies" endpoint. For now we simply
-// return a plain-text placeholder response.
 func (app *application) createCandleHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "create a new candle")
 }
 
-// Add a showMovieHandler for the "GET /v1/movies/:id" endpoint. For now, we retrieve
-// the interpolated "id" parameter from the current URL and include it in a placeholder
-// response.
 func (app *application) showCandleHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
-	fmt.Fprintf(w, "show the details of candles %d\n", id)
+
+	candle := data.Candle{
+		ID:          id,
+		CreatedAt:   time.Now(),
+		Name:        "Pink",
+		Description: "Candle with roses",
+		Price:       4000.0,
+	}
+	err = app.writeJSON(w, http.StatusOK, candle, nil)
+	if err != nil {
+		app.logger.Println(err)
+		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
+	}
 }
