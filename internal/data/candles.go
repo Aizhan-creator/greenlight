@@ -5,9 +5,9 @@ import (
 )
 
 type Candle struct {
-	ID          int64 // Unique integer ID for the candle
-	CreatedAt   time.Time
-	Name        string
-	Description string
-	Price       float64
+	ID          int64     `json:"id"`
+	CreatedAt   time.Time `json:"-"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Price       float64   `json:"price,omitempty"`
 }
