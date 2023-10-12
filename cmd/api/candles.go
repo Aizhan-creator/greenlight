@@ -1,31 +1,26 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"greenlight/internal/data"
+	"greenlight.alexedwards.net/internal/data"
 	"net/http"
 	"time" // New import
 )
 
 func (app *application) createCandleHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "create a new candle")
-}
-func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
-
 	var input struct {
-		Name        string  `json:"name"`
-		Description string  `json:"description"`
-		Price       float64 `json:"price,omitempty"`
+		Title   string       `json:"title"`
+		Year    int32        `json:"year"`
+		Runtime data.Runtime `json:"runtime"` // Make this field a data.Runtime type.
+		Genres  []string     `json:"genres"`
 	}
-	err := json.NewDecoder(r.Body).Decode(&input)
+	err := app.readJSON(w, r, &input)
 	if err != nil {
-		app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+		app.badRequestResponse(w, r, err)
 		return
 	}
 	fmt.Fprintf(w, "%+v\n", input)
 }
-
 func (app *application) showCandleHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
@@ -41,6 +36,7 @@ func (app *application) showCandleHandler(w http.ResponseWriter, r *http.Request
 		Price:       4000.0,
 	}
 	err = app.writeJSON(w, http.StatusOK, envelope{"candle": candle}, nil)
+
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

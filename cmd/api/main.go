@@ -21,6 +21,10 @@ type application struct {
 	logger *log.Logger
 }
 
+//func (app *application) readIDParam(r *http.Request) (interface{}, interface{}) {
+//
+//}
+
 func main() {
 	var cfg config
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
