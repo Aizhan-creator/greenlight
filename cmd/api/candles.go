@@ -9,10 +9,10 @@ import (
 
 func (app *application) createCandleHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Title   string       `json:"title"`
-		Year    int32        `json:"year"`
-		Runtime data.Runtime `json:"runtime"` // Make this field a data.Runtime type.
-		Genres  []string     `json:"genres"`
+		Name        string  `json:"name"`
+		Description int32   `json:"description"`
+		Runtime     int32   `json:"runtime"`
+		Price       float64 `json:"price,omitempty"`
 	}
 	err := app.readJSON(w, r, &input)
 	if err != nil {
@@ -27,7 +27,6 @@ func (app *application) showCandleHandler(w http.ResponseWriter, r *http.Request
 		http.NotFound(w, r)
 		return
 	}
-
 	candle := data.Candle{
 		ID:          id,
 		CreatedAt:   time.Now(),
