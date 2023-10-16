@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
-
 	//"github.com/golang-migrate/migrate"
 	//"github.com/golang-migrate/migrate/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -21,6 +20,7 @@ import (
 
 const version = "1.1.0"
 
+//export GREENLIGHT_DB_DSN='postgres://greenlight:qwerty2023@localhost/greenlight'
 type config struct {
 	port int
 	env  string
@@ -42,13 +42,13 @@ type application struct {
 //}
 
 func main() {
-	connStr := "user=postgres dbname=mydb sslmode=disable password=qwerty2023"
+	connStr := "user=postgres dbname=greenlight sslmode=disable password=qwerty2023"
 	var cfg config
 	cfg.env = "dev"
 	cfg.port = 4000
 	//flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	//flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
-	flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://greenlight:pa55word@localhost/greenlight?sslmode=disable", "PostgreSQL DSN")
+	flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://greenlight:qwerty2023@localhost/greenlight?sslmode=disable", "PostgreSQL DSN")
 
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
 	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connections")
