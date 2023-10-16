@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/Aizhan-creator/greenlight/internal/data"
-	"github.com/Aizhan-creator/greenlight/internal/validator"
+	"greenlight.alexedwards.net/internal/data"
+	"greenlight.alexedwards.net/internal/validator"
+	//"github.com/Aizhan-creator/greenlight/internal/data"
+	//"github.com/Aizhan-creator/greenlight/internal/validator"
 	"net/http"
 	"time"
 )
@@ -45,6 +47,7 @@ func (app *application) showCandleHandler(w http.ResponseWriter, r *http.Request
 		CreatedAt:   time.Now(),
 		Name:        "Pink",
 		Description: "Candle with roses",
+		Runtime:     102,
 		Price:       4000.0,
 	}
 	err = app.writeJSON(w, http.StatusOK, envelope{"candle": candle}, nil)
