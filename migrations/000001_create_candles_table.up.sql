@@ -4,5 +4,5 @@ CREATE TABLE IF NOT EXISTS candles (
     name text NOT NULL,
     description text NOT NULL,
     price integer NOT NULL,
-    runtime integer NOT NULL,
+    runtime integer NOT NULL
 );
