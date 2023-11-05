@@ -10,11 +10,21 @@ var (
 )
 
 type Models struct {
-	Movies CandleModel
+	Candles interface {
+		Insert(movie *Candle) error
+		Get(id int64) (*Candle, error)
+		Update(movie *Candle) error
+		Delete(id int64) error
+	}
 }
 
 func NewModels(db *sql.DB) Models {
 	return Models{
-		Movies: CandleModel{DB: db},
+		Candles: CandleModel{DB: db},
+	}
+}
+func NewMockModels() Models {
+	return Models{
+		Candles: MockCandleModel{},
 	}
 }

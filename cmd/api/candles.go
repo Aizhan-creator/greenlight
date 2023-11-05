@@ -34,7 +34,19 @@ func (app *application) createCandleHandler(w http.ResponseWriter, r *http.Reque
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
-	fmt.Fprintf(w, "%+v\n", input)
+	//fmt.Fprintf(w, "%+v\n", input)
+	err = app.models.Candles.Insert(candle)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/v1/candles/%d", candle.ID))
+
+	err = app.writeJSON(w, http.StatusCreated, envelope{"candle": candle}, headers)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 func (app *application) showCandleHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/internal/data/candles.go" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/migrations/000001_create_candles_table.up.sql" dialect="H2" />
     <file url="file://$PROJECT_DIR$/migrations/000002_add_candles_check_constraints.up.sql" dialect="GenericSQL" />
   </component>
