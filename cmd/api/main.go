@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
-	//"github.com/golang-migrate/migrate"
-	//"github.com/golang-migrate/migrate/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 	"log"
@@ -20,7 +18,7 @@ import (
 
 const version = "1.1.0"
 
-//export GREENLIGHT_DB_DSN='postgres://greenlight:qwerty2023@localhost/greenlight'
+// export GREENLIGHT_DB_DSN='postgres://greenlight:qwerty2023@localhost/greenlight'
 type config struct {
 	port int
 	env  string
@@ -42,7 +40,7 @@ type application struct {
 //}
 
 func main() {
-	connStr := "user=postgres dbname=greenlight sslmode=disable password=qwerty2023"
+	connStr := "user=greenlight dbname=greenlight sslmode=disable password=qwerty2023"
 	var cfg config
 	cfg.env = "dev"
 	cfg.port = 4000
@@ -108,20 +106,16 @@ func openDB(cfg config) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Set the maximum idle timeout.
+
 	db.SetConnMaxIdleTime(duration)
-	// Create a context with a 5-second timeout deadline.
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	// Use PingContext() to establish a new connection to the database, passing in the
-	// context we created above as a parameter. If the connection couldn't be
-	// established successfully within the 5 second deadline, then this will return an
-	// error.
 	err = db.PingContext(ctx)
 	if err != nil {
 		return nil, err
 	}
-	// Return the sql.DB connection pool.
+
 	return db, nil
 
 }

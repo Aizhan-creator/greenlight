@@ -1,11 +1,30 @@
 package data
 
 import (
+	"database/sql"
 	"encoding/json"
 	"greenlight.alexedwards.net/internal/validator"
 	//"github.com/Aizhan-creator/greenlight/internal/validator"
 	"time"
 )
+
+type CandleModel struct {
+	DB *sql.DB
+}
+
+func (c CandleModel) Insert(candle *Candle) error {
+	return nil
+}
+func (c CandleModel) Get(id int64) (*Candle, error) {
+	return nil, nil
+}
+
+func (c CandleModel) Update(candle *Candle) error {
+	return nil
+}
+func (c CandleModel) Delete(id int64) error {
+	return nil
+}
 
 type Candle struct {
 	ID          int64     //`json:"id"`
