@@ -9,5 +9,6 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0 // indirect
 	github.com/lib/pq v1.10.2 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
+	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/time v0.4.0 // indirect
 )
