@@ -1,8 +1,10 @@
 package data
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"github.com/lib/pq"
 	"greenlight.alexedwards.net/internal/validator"
 
@@ -84,7 +86,35 @@ func (c CandleModel) Insert(candle *Candle) error {
 
 }
 func (c CandleModel) Get(id int64) (*Candle, error) {
-	return nil, nil
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+	query := `SELECT id, created_at, name, description, runtime, price
+				FROM candles
+				WHERE id = $1`
+
+	var candle Candle
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := c.DB.QueryRowContext(ctx, query, id).Scan(
+		&candle.ID,
+		&candle.CreatedAt,
+		&candle.Name,
+		&candle.Description,
+		&candle.Runtime,
+		&candle.Price,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+	return &candle, nil
 }
 
 func (c CandleModel) Update(candle *Candle) error {
