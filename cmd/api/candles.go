@@ -85,7 +85,7 @@ func (app *application) updateCandleHandler(w http.ResponseWriter, r *http.Reque
 		default:
 			app.serverErrorResponse(w, r, err)
 		}
-		app.logger.Println(err)
+		app.logger.PrintInfo("error", nil)
 		return
 	}
 	if r.Header.Get("X-Expected-Version") != "" {
@@ -95,7 +95,7 @@ func (app *application) updateCandleHandler(w http.ResponseWriter, r *http.Reque
 		}
 	}
 	var input struct {
-		Name        *string       `json:"title"`
+		Name        *string       `json:"name"`
 		Description *string       `json:"description"`
 		Runtime     *data.Runtime `json:"runtime"`
 		Price       *float64      `json:"price"`
@@ -103,7 +103,7 @@ func (app *application) updateCandleHandler(w http.ResponseWriter, r *http.Reque
 
 	err = app.readJSON(w, r, &input)
 	if err != nil {
-		app.logger.Println("wrong body params", err)
+		app.logger.PrintInfo("wrong body params", nil)
 		app.badRequestResponse(w, r, err)
 		return
 	}
