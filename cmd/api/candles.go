@@ -1,13 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"greenlight.alexedwards.net/internal/data"
 	"greenlight.alexedwards.net/internal/validator"
 	//"github.com/Aizhan-creator/greenlight/internal/data"
 	//"github.com/Aizhan-creator/greenlight/internal/validator"
 	"net/http"
-	"time"
 )
 
 func (app *application) createCandleHandler(w http.ResponseWriter, r *http.Request) {
@@ -54,16 +54,103 @@ func (app *application) showCandleHandler(w http.ResponseWriter, r *http.Request
 		http.NotFound(w, r)
 		return
 	}
-	candle := data.Candle{
-		ID:          id,
-		CreatedAt:   time.Now(),
-		Name:        "Pink",
-		Description: "Candle with roses",
-		Runtime:     102,
-		Price:       4000.0,
+	candle, err := app.models.Candles.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
 	}
 	err = app.writeJSON(w, http.StatusOK, envelope{"candle": candle}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+func (app *application) updateCandleHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.readIDParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	candle, err := app.models.Candles.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		app.logger.Println(err)
+		return
+	}
+	var input struct {
+		Name        *string       `json:"title"`
+		Description *string       `json:"description"`
+		Runtime     *data.Runtime `json:"runtime"`
+		Price       *float64      `json:"price"`
+	}
 
+	err = app.readJSON(w, r, &input)
+	if err != nil {
+		app.logger.Println("wrong body params", err)
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	if input.Name != nil {
+		candle.Name = *input.Name
+	}
+	// We also do the same for the other fields in the input struct.
+	if input.Description != nil {
+		candle.Description = *input.Description
+	}
+	if input.Runtime != nil {
+		candle.Runtime = *input.Runtime
+	}
+	if input.Price != nil {
+		candle.Price = *input.Price
+	}
+
+	v := validator.New()
+	if data.ValidateCandle(v, candle); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+	err = app.models.Candles.Update(candle)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrEditConflict):
+			app.editConflictResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+	err = app.writeJSON(w, http.StatusOK, envelope{"candle": candle}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+func (app *application) deleteCandleHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.readIDParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	err = app.models.Candles.Delete(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "candle successfully deleted"}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

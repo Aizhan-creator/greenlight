@@ -37,6 +37,10 @@ type application struct {
 	models data.Models
 }
 
+func (app *application) editConflictResponse(w http.ResponseWriter, r *http.Request) {
+
+}
+
 //func (app *application) readIDParam(r *http.Request) (interface{}, interface{}) {
 //
 //}
