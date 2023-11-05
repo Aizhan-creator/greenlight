@@ -188,7 +188,7 @@ func (app *application) listCandlesHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	candles, metadata, err := app.models.Candles.GetAll(input.Name, input.Description, input.Filters)
+	candles, metadata, err := app.models.Candles.GetAll(input.Name, input.Filters)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

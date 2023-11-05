@@ -11,7 +11,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 	"greenlight.alexedwards.net/internal/data"
-	"log"
+	"greenlight.alexedwards.net/internal/jsonlog"
 	"net/http"
 	"os"
 	"time"
@@ -33,7 +33,7 @@ type config struct {
 
 type application struct {
 	config config
-	logger *log.Logger
+	logger *jsonlog.Logger
 	models data.Models
 }
 
@@ -42,7 +42,7 @@ type application struct {
 //}
 
 func main() {
-	connStr := "user=greenlight dbname=greenlight sslmode=disable password=qwerty2023"
+	//connStr := "user=greenlight dbname=greenlight sslmode=disable password=qwerty2023"
 	var cfg config
 	cfg.env = "dev"
 	cfg.port = 4000
@@ -55,27 +55,29 @@ func main() {
 	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "PostgreSQL max connection idle time")
 
 	flag.Parse()
-	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
-	db, err := sql.Open("postgres", connStr)
+	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
+	//db, err := sql.Open("postgres", connStr)
+
+	db, err := openDB(cfg)
 	if err != nil {
-		logger.Fatal(err)
+		logger.PrintFatal(err, nil)
 	}
 	defer db.Close()
-	logger.Printf("database connection pool established")
+	logger.PrintInfo("database connection pool established", nil)
 
 	migrationDriver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
-		logger.Fatal(err, nil)
+		logger.PrintFatal(err, nil)
 	}
 	migrator, err := migrate.NewWithDatabaseInstance("./migrations", "postgres", migrationDriver)
 	if err != nil {
-		logger.Fatal(err, nil)
+		logger.PrintFatal(err, nil)
 	}
 	err = migrator.Up()
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		logger.Fatal(err, nil)
+		logger.PrintFatal(err, nil)
 	}
-	logger.Printf("database migrations applied")
+	logger.PrintInfo("database migrations applied", nil)
 
 	app := application{
 		config: cfg,
@@ -91,9 +93,13 @@ func main() {
 		IdleTimeout:  time.Minute,
 	}
 
-	logger.Println(fmt.Sprintf("Server is running on port %s", srv.Addr))
+	logger.PrintInfo("starting server", map[string]string{
+		"addr": srv.Addr,
+		"env":  cfg.env,
+	})
 	err = srv.ListenAndServe()
-	logger.Fatal(err)
+	// Use the PrintFatal() method to log the error and exit.
+	logger.PrintFatal(err, nil)
 }
 
 func openDB(cfg config) (*sql.DB, error) {

@@ -5,27 +5,21 @@ import (
 	"errors"
 )
 
+// Define a custom ErrRecordNotFound error. We'll return this from our Get() method when
+// looking up a movie that doesn't exist in our database.
 var (
 	ErrRecordNotFound = errors.New("record not found")
 	ErrEditConflict   = errors.New("edit conflict")
 )
 
+// Create a Models struct which wraps the MovieModel. We'll add other models to this,
+// like a UserModel and PermissionModel, as our build progresses.
 type Models struct {
-	Candles interface {
-		Insert(movie *Candle) error
-		Get(id int64) (*Candle, error)
-		Update(movie *Candle) error
-		Delete(id int64) error
-	}
+	Candles CandleModel
 }
 
 func NewModels(db *sql.DB) Models {
 	return Models{
 		Candles: CandleModel{DB: db},
-	}
-}
-func NewMockModels() Models {
-	return Models{
-		Candles: MockCandleModel{},
 	}
 }
