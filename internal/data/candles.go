@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/lib/pq"
 	"greenlight.alexedwards.net/internal/validator"
 
@@ -82,7 +83,11 @@ func (c CandleModel) Insert(candle *Candle) error {
 				VALUES ($1, $2, $3, $4)
 				RETURNING id, created_at`
 	args := []interface{}{candle.Name, candle.Description, candle.Runtime, pq.Array(candle.Price)}
-	return c.DB.QueryRow(query, args...).Scan(&candle.ID, &candle.CreatedAt)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return c.DB.QueryRowContext(ctx, query, args...).Scan(&candle.ID, &candle.CreatedAt)
 
 }
 func (c CandleModel) Get(id int64) (*Candle, error) {
@@ -171,4 +176,50 @@ func (c CandleModel) Delete(id int64) error {
 		return ErrRecordNotFound
 	}
 	return nil
+}
+
+func (c CandleModel) GetAll(name string, filters Filters) ([]*Candle, Metadata, error) {
+	query := fmt.Sprintf(`
+		SELECT count(*) OVER(), id, created_at, name, description, runtime, price
+		FROM movies
+		WHERE (to_tsvector('simple', name) @@ plainto_tsquery('simple', $1) OR $1 = '')
+		ORDER BY %s %s, id ASC
+		LIMIT $3 OFFSET $4`, filters.sortColumn(), filters.sortDirection())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	args := []interface{}{name, filters.limit(), filters.offset()}
+
+	rows, err := c.DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+	defer rows.Close()
+
+	candles := []*Candle{}
+	totalRecords := 0
+
+	for rows.Next() {
+		var candle Candle
+
+		err := rows.Scan(
+			&totalRecords,
+			&candle.ID,
+			&candle.CreatedAt,
+			&candle.Name,
+			&candle.Description,
+			&candle.Runtime,
+			&candle.Price,
+		)
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+		candles = append(candles, &candle)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, Metadata{}, err
+	}
+	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
+	return candles, metadata, nil
 }

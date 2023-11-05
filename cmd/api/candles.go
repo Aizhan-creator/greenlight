@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"greenlight.alexedwards.net/internal/data"
 	"greenlight.alexedwards.net/internal/validator"
+	"strconv"
+
 	//"github.com/Aizhan-creator/greenlight/internal/data"
 	//"github.com/Aizhan-creator/greenlight/internal/validator"
 	"net/http"
@@ -86,6 +88,12 @@ func (app *application) updateCandleHandler(w http.ResponseWriter, r *http.Reque
 		app.logger.Println(err)
 		return
 	}
+	if r.Header.Get("X-Expected-Version") != "" {
+		if strconv.FormatInt(int64(candle.Price), 32) != r.Header.Get("X-Expected-Version") {
+			app.editConflictResponse(w, r)
+			return
+		}
+	}
 	var input struct {
 		Name        *string       `json:"title"`
 		Description *string       `json:"description"`
@@ -154,4 +162,41 @@ func (app *application) deleteCandleHandler(w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
+}
+
+func (app *application) listCandlesHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Name        string
+		Description string
+		data.Filters
+	}
+	v := validator.New()
+
+	qs := r.URL.Query()
+
+	input.Name = app.readString(qs, "name", "")
+	input.Description = app.readString(qs, "description", "")
+
+	input.Filters.Page = app.readInt(qs, "page", 1, v)
+	input.Filters.PageSize = app.readInt(qs, "page_size", 20, v)
+	// Read the sort query string value into the embedded struct.
+	input.Filters.Sort = app.readString(qs, "sort", "id")
+	input.Filters.SortSafelist = []string{"id", "name", "description", "runtime", "-id", "-title", "-year", "-runtime"}
+
+	if data.ValidateFilters(v, input.Filters); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	candles, metadata, err := app.models.Candles.GetAll(input.Name, input.Description, input.Filters)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"candles": candles, "metadata": metadata}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+
 }
