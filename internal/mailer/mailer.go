@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+//go:embed "templates"
 var templateFS embed.FS
 
 type Mailer struct {
@@ -38,6 +39,7 @@ func (m Mailer) Send(recipient, templateFile string, data interface{}) error {
 
 	plainBody := new(bytes.Buffer)
 	err = tmpl.ExecuteTemplate(plainBody, "plainBody", data)
+	err = tmpl.ExecuteTemplate(plainBody, "plainBody", data)
 	if err != nil {
 		return err
 	}
@@ -54,6 +56,7 @@ func (m Mailer) Send(recipient, templateFile string, data interface{}) error {
 	msg.SetHeader("Subject", subject.String())
 	msg.SetBody("text/plain", plainBody.String())
 	msg.AddAlternative("text/html", htmlBody.String())
+
 	err = m.dialer.DialAndSend(msg)
 	if err != nil {
 		return err
