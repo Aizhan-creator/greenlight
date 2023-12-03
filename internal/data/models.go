@@ -11,15 +11,17 @@ var (
 )
 
 type Models struct {
-	Candles CandleModel
-	Users   UserModel // Add a new Users field.
-	Tokens  TokenModel
+	Candles     CandleModel
+	Users       UserModel
+	Tokens      TokenModel
+	Permissions PermissionModel
 }
 
 func NewModels(db *sql.DB) Models {
 	return Models{
-		Candles: CandleModel{DB: db},
-		Users:   UserModel{DB: db}, // Initialize a new UserModel instance.
-		Tokens:  TokenModel{DB: db},
+		Candles:     CandleModel{DB: db},
+		Users:       UserModel{DB: db}, // Initialize a new UserModel instance.
+		Tokens:      TokenModel{DB: db},
+		Permissions: PermissionModel{DB: db},
 	}
 }
