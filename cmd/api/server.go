@@ -19,6 +19,7 @@ func (app *application) serve() error {
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
+
 	shutdownError := make(chan error)
 	go func() {
 		quit := make(chan os.Signal, 1)
@@ -40,6 +41,7 @@ func (app *application) serve() error {
 		app.wg.Wait()
 		shutdownError <- nil
 	}()
+
 	app.logger.PrintInfo("starting server", map[string]string{
 		"addr": srv.Addr,
 		"env":  app.config.env,
